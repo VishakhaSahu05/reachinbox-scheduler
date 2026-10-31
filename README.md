@@ -365,7 +365,7 @@ Idempotency-Key: 4f7d0c2e-0b8a-4c1e-9d55-2a1f0e6b9c11
 - **Design.** The assignment text didn't include a working Figma link, so the UI follows the usual ReachInbox layout: a sidebar with Compose and Scheduled/Sent, list rows with status chips, and a "Send Later" popover with presets. Two things were left out on purpose: email/password login (only Google login is required, and fake fields would do nothing) and a rich-text toolbar (bodies are plain text, sent as text plus simple HTML).
 - **Senders are a shared pool.** The per-sender cap therefore applies across all users, as a real mailbox limit would. Campaign limits are per campaign.
 - **Secrets at rest.** Slack tokens and SMTP passwords are stored in plain text in the database. In production I would encrypt them or keep them in a secrets manager.
-- **Fixed windows** instead of sliding ones (see the rate limiting section).
+- **Fixed windows** instead of sliding ones (see the rate limiting section). Windows are aligned to UTC hours, so in IST they start at :30 (e.g. 17:30–18:30).
 - **At-most-once for a crash during SMTP.** Explained under "Persistence and restarts".
 - **Bull Board shows every user's jobs.** It's an operator tool behind login, not a per-user view.
 - **Sessions** are a 7-day JWT in an `httpOnly`, `SameSite=Lax` cookie. Logout clears the cookie; there is no server-side session list.
