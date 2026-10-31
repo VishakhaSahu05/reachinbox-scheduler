@@ -88,7 +88,7 @@ cd frontend && npm test       # lead parsing
 
 ### Deploying
 
-`deploy/docker-compose.yml` runs the whole stack on a single VM with Docker: the app image (API, worker and the built dashboard on one origin), PostgreSQL, Redis, Elasticsearch, and Caddy, which gets an HTTPS certificate automatically.
+`deploy/docker-compose.yml` runs the whole stack on a single VM with Docker: one app image started as two containers (the API, which also serves the built dashboard, and the worker), PostgreSQL, Redis, Elasticsearch, and Caddy, which gets an HTTPS certificate automatically. Each container runs node as PID 1, so `docker compose stop` gives the worker a clean SIGTERM and up to 60 seconds to finish in-flight sends.
 
 ```bash
 cd deploy

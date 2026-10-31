@@ -1,27 +1,40 @@
-# Production stack for a single VM: app (API + worker + dashboard), databases, and Caddy for HTTPS.
+# Production stack for a single VM: API (+ dashboard), worker, databases, and Caddy for HTTPS.
 # Usage (from this folder): cp .env.example .env, fill it in, then `docker compose up -d --build`.
+
+# API and worker run from the same image as separate containers. Each runs node as PID 1, so
+# `docker compose stop` delivers SIGTERM straight to it and the worker can finish in-flight sends.
+x-backend: &backend
+  build: ..
+  image: reachinbox-app
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql://reachinbox:${POSTGRES_PASSWORD}@postgres:5432/reachinbox
+    REDIS_URL: redis://redis:6379
+    ELASTICSEARCH_URL: http://elasticsearch:9200
+    # The URL people open. Same as https://DOMAIN, unless a proxy (e.g. Vercel) fronts the server.
+    APP_URL: ${PUBLIC_URL}
+    FRONTEND_URL: ${PUBLIC_URL}
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    # The search index is created on boot, so wait until Elasticsearch answers.
+    elasticsearch:
+      condition: service_healthy
+  restart: unless-stopped
+
 services:
   app:
-    build: ..
-    env_file: .env
-    environment:
-      DATABASE_URL: postgresql://reachinbox:${POSTGRES_PASSWORD}@postgres:5432/reachinbox
-      REDIS_URL: redis://redis:6379
-      ELASTICSEARCH_URL: http://elasticsearch:9200
-      # The URL people open. Same as https://DOMAIN, unless a proxy (e.g. Vercel) fronts the server.
-      APP_URL: ${PUBLIC_URL}
-      FRONTEND_URL: ${PUBLIC_URL}
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      # The API creates the search index on boot, so wait until Elasticsearch answers.
-      elasticsearch:
-        condition: service_healthy
-    # Time for the worker to finish emails that are mid-send before Docker kills it.
+    <<: *backend
+    command: ["sh", "-c", "npx prisma migrate deploy && exec node dist/server.js"]
+
+  worker:
+    <<: *backend
+    # migrate deploy is idempotent and locked, so both containers can run it safely.
+    command: ["sh", "-c", "npx prisma migrate deploy && exec node dist/worker.js"]
+    # Time to finish emails that are mid-send before Docker kills the process.
     stop_grace_period: 60s
-    restart: unless-stopped
 
   caddy:
     image: caddy:2

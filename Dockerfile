@@ -16,7 +16,8 @@ COPY backend/ ./
 RUN npm run build
 
 FROM node:22-slim
-RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
+# procps provides `ps`, which concurrently needs to stop its child processes cleanly.
+RUN apt-get update && apt-get install -y --no-install-recommends openssl procps && rm -rf /var/lib/apt/lists/*
 WORKDIR /app/backend
 COPY --from=backend /app/backend ./
 COPY --from=frontend /app/frontend/dist /app/frontend-dist
