@@ -5,6 +5,7 @@ import { RequireAuth } from './features/auth/RequireAuth';
 import { ComposePage } from './features/compose/ComposePage';
 import { EmailDetailPage } from './features/emails/EmailDetailPage';
 import { EmailListPage } from './features/emails/EmailListPage';
+import { PrivacyPage } from './features/legal/PrivacyPage';
 
 // Keeps the query string (e.g. ?slack=connected after the OAuth redirect) when landing on "/".
 function HomeRedirect() {
@@ -17,6 +18,7 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
         <Route
           element={
             <RequireAuth>
