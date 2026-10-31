@@ -19,6 +19,8 @@ services:
       # The API creates the search index on boot, so wait until Elasticsearch answers.
       elasticsearch:
         condition: service_healthy
+    # Time for the worker to finish emails that are mid-send before Docker kills it.
+    stop_grace_period: 60s
     restart: unless-stopped
 
   caddy:

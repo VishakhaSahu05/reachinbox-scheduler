@@ -22,5 +22,6 @@ COPY --from=backend /app/backend ./
 COPY --from=frontend /app/frontend/dist /app/frontend-dist
 ENV NODE_ENV=production FRONTEND_DIST=/app/frontend-dist PORT=4000
 EXPOSE 4000
-# Apply pending migrations, then run the API and the worker.
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+# Apply pending migrations, then run the API and the worker. `exec` makes concurrently PID 1 so
+# `docker stop` reaches the processes and the worker can finish in-flight sends before exiting.
+CMD ["sh", "-c", "npx prisma migrate deploy && exec node_modules/.bin/concurrently -k -n api,worker 'node dist/server.js' 'node dist/worker.js'"]
