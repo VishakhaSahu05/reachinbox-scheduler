@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://reachinbox-scheduler.koreacentral.cloudapp.azure.com/api/:path*" },
+    { "source": "/admin/:path*", "destination": "https://reachinbox-scheduler.koreacentral.cloudapp.azure.com/admin/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

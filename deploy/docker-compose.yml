@@ -8,8 +8,9 @@ services:
       DATABASE_URL: postgresql://reachinbox:${POSTGRES_PASSWORD}@postgres:5432/reachinbox
       REDIS_URL: redis://redis:6379
       ELASTICSEARCH_URL: http://elasticsearch:9200
-      APP_URL: https://${DOMAIN}
-      FRONTEND_URL: https://${DOMAIN}
+      # The URL people open. Same as https://DOMAIN, unless a proxy (e.g. Vercel) fronts the server.
+      APP_URL: ${PUBLIC_URL}
+      FRONTEND_URL: ${PUBLIC_URL}
     depends_on:
       postgres:
         condition: service_healthy
