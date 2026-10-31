@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  googleId  String   @unique
+  email     String   @unique
+  name      String
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaigns Campaign[]
+  emails    Email[]
+  slack     SlackConnection?
+}
+
+// SMTP mailbox we send from. Rate limits are enforced per sender.
+model Sender {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  email     String   @unique
+  smtpHost  String
+  smtpPort  Int
+  smtpUser  String
+  smtpPass  String
+  createdAt DateTime @default(now())
+
+  campaigns Campaign[]
+  emails    Email[]
+}
+
+model Campaign {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @db.Uuid
+  senderId       String   @db.Uuid
+  subject        String
+  body           String
+  startAt        DateTime
+  delayMs        Int
+  hourlyLimit    Int
+  totalEmails    Int
+  idempotencyKey String?
+  createdAt      DateTime @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender Sender  @relation(fields: [senderId], references: [id])
+  emails Email[]
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId, createdAt])
+}
+
+enum EmailStatus {
+  SCHEDULED
+  RATE_LIMITED
+  SENDING
+  SENT
+  FAILED
+}
+
+model Email {
+  id              String      @id @db.Uuid
+  campaignId      String      @db.Uuid
+  userId          String      @db.Uuid
+  senderId        String      @db.Uuid
+  toAddress       String
+  sequence        Int
+  status          EmailStatus @default(SCHEDULED)
+  scheduledAt     DateTime
+  // When the email reached a final state (SENT or FAILED).
+  sentAt          DateTime?
+  lockedAt        DateTime?
+  attempts        Int         @default(0)
+  rescheduleCount Int         @default(0)
+  messageId       String?
+  previewUrl      String?
+  error           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender   Sender   @relation(fields: [senderId], references: [id])
+
+  @@unique([campaignId, toAddress])
+  @@index([userId, status, scheduledAt])
+  @@index([userId, status, sentAt])
+  @@index([status])
+}
+
+model SlackConnection {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @unique @db.Uuid
+  teamId      String
+  teamName    String
+  channelId   String
+  channelName String
+  webhookUrl  String
+  accessToken String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
