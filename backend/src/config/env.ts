@@ -9,6 +9,8 @@ const EnvSchema = z.object({
   PORT: count(4000),
   APP_URL: z.string().url().default('http://localhost:4000'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+  // Folder with the built dashboard; set in production so the API serves it too.
+  FRONTEND_DIST: z.string().optional(),
 
   DATABASE_URL: z.string().min(1),
   REDIS_URL: z.string().default('redis://127.0.0.1:6379'),

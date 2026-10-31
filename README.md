@@ -84,6 +84,18 @@ cd backend && npm test        # planner unit tests + rate limiter tests against 
 cd frontend && npm test       # lead parsing
 ```
 
+### Deploying
+
+`deploy/docker-compose.yml` runs the whole stack on a single VM with Docker: the app image (API, worker and the built dashboard on one origin), PostgreSQL, Redis, Elasticsearch, and Caddy, which gets an HTTPS certificate automatically.
+
+```bash
+cd deploy
+cp .env.example .env          # domain, secrets, Google / Slack credentials
+docker compose up -d --build
+```
+
+Add `https://<domain>/api/auth/google/callback` and `https://<domain>/api/slack/callback` as redirect URLs in Google and Slack. The host must allow outbound SMTP on port 587 for Ethereal.
+
 ## Configuration
 
 ### Google OAuth

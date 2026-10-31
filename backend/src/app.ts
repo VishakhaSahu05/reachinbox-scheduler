@@ -1,3 +1,4 @@
+import path from 'node:path';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
@@ -63,6 +64,16 @@ export function createApp() {
   app.use('/api', (_req, res) => {
     res.status(404).json({ error: 'Not found' });
   });
+
+  // In production the built dashboard is served from here, so the app and API share one origin.
+  if (env.FRONTEND_DIST) {
+    const dist = path.resolve(env.FRONTEND_DIST);
+    app.use(express.static(dist, { index: false }));
+    app.get(/^\/(?!api\/|admin\/).*/, (_req, res) => {
+      res.sendFile(path.join(dist, 'index.html'));
+    });
+  }
+
   app.use(errorHandler);
 
   return app;
