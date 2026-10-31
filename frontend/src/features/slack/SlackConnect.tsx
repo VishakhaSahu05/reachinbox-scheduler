@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, Hash, Send, Unplug } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { queryKeys, useSlackDisconnect, useSlackStatus, useSlackTestMessage } from '../../api/queries';
 import { buttonClasses } from '../../components/ui/Button';
 import { Popover } from '../../components/ui/Popover';
@@ -17,12 +17,14 @@ const RESULT_MESSAGES: Record<string, { kind: 'success' | 'error' | 'info'; text
 /** Shows the toast for ?slack=... after the OAuth round trip, then cleans the URL. */
 function useSlackRedirectResult() {
   const [params, setParams] = useSearchParams();
+  const { pathname } = useLocation();
   const toast = useToast();
   const queryClient = useQueryClient();
   const result = params.get('slack');
 
   useEffect(() => {
-    if (!result) return;
+    // Slack sends us back to "/", which immediately redirects; handle the result once, on the final page.
+    if (!result || pathname === '/') return;
     const message = RESULT_MESSAGES[result] ?? RESULT_MESSAGES.error;
     toast[message.kind](message.text);
     queryClient.invalidateQueries({ queryKey: queryKeys.slack });
@@ -33,7 +35,7 @@ function useSlackRedirectResult() {
       },
       { replace: true },
     );
-  }, [result, toast, queryClient, setParams]);
+  }, [result, pathname, toast, queryClient, setParams]);
 }
 
 export function SlackConnect() {
