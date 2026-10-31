@@ -354,12 +354,6 @@ Idempotency-Key: 4f7d0c2e-0b8a-4c1e-9d55-2a1f0e6b9c11
 - [x] Toasts for success and errors; Slack connect, test and disconnect from the header
 - [x] Typed API layer with reusable UI components (Button, Input, Field, Popover, Toast, StatusBadge, EmptyState, Pagination, Avatar)
 
-## Demo tips
-
-- **Restart scenario:** schedule a few emails 2–3 minutes out, Ctrl+C `npm run dev`, wait, then start it again. The worker logs `Pending emails checked against the queue`, and the emails go out on time, once.
-- **Rate limiting:** set `RATE_LIMIT_WINDOW_MS=120000` (2-minute windows) and use a low hourly limit in Compose, e.g. 3 recipients per window for 8 recipients. You'll see emails marked "Rate limited" with new times, and a Slack message when the limit is reached.
-- **Queue internals:** keep `/admin/queues` open next to the dashboard.
-
 ## Assumptions and trade-offs
 
 - **Design.** The assignment text didn't include a working Figma link, so the UI follows the usual ReachInbox layout: a sidebar with Compose and Scheduled/Sent, list rows with status chips, and a "Send Later" popover with presets. Two things were left out on purpose: email/password login (only Google login is required, and fake fields would do nothing) and a rich-text toolbar (bodies are plain text, sent as text plus simple HTML).
