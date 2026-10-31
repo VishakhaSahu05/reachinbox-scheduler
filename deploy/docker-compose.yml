@@ -15,6 +15,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      # The API creates the search index on boot, so wait until Elasticsearch answers.
+      elasticsearch:
+        condition: service_healthy
     restart: unless-stopped
 
   caddy:
@@ -63,6 +66,10 @@ services:
       - ES_JAVA_OPTS=-Xms512m -Xmx512m
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      retries: 30
     restart: unless-stopped
 
 volumes:
