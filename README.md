@@ -1,5 +1,7 @@
 # ReachInbox Email Scheduler
 
+**Live:** https://reachinbox-scheduler.koreacentral.cloudapp.azure.com (queue dashboard at `/admin/queues` after login)
+
 A small email scheduling service with a dashboard. Users sign in with Google, upload a list of leads, and schedule a campaign. Every email becomes a BullMQ delayed job, a worker sends it through Ethereal SMTP at the right time, and per-sender and per-campaign hourly limits are enforced in Redis. The system survives restarts without losing or duplicating emails. When a limit is hit, a Slack message goes to the user's connected channel.
 
 ## Tech stack
